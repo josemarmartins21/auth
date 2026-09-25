@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Modules\Auth\app\Models\Permission;
+use Modules\Auth\app\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,10 +20,64 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
+        $user = User::factory()->create([
             'name' => 'josimar',
            'email' => 'josimar@email.ao',
            'password' => Hash::make('123456'),
         ]);
+
+        $roles = [
+            [
+                'name' => 'admin',
+                'guard_name' => 'api',
+            ], [
+                'name' => 'user',
+                'guard_name' => 'api'
+            ]
+        ];
+
+        foreach ($roles as $data) {
+            Role::create($data);
+            
+        }
+
+        $permissions = [
+            [
+                'name' => 'ver usuário',
+                'guard_name' => 'api',
+            ],
+            [
+                'name' => 'criar usuário',
+                'guard_name' => 'api',
+            ],
+            [
+                'name' => 'editar usuário',
+                'guard_name' => 'api',
+            ],
+            [
+                'name' => 'excluir usuário',
+                'guard_name' => 'api',
+            ],
+        ];
+
+        foreach ($permissions as $data) {
+            Permission::create($data);
+        }
+
+        $admin = \Modules\Auth\app\Models\Role::where('name', 'admin')->first();
+
+        
+        $permissions = Permission::whereIn('name', [
+            'ver usuário',
+            'ver usuários',
+            'criar usuário',
+            'editar usuário',
+            'excluir usuário',
+        ])->get();
+
+        $admin->givePermissionTo($permissions);
+
+        $user->assignRole($admin);
+
     }
 }
