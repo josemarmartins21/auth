@@ -40,6 +40,10 @@ class DatabaseSeeder extends Seeder
             Role::create($data);
             
         }
+        
+        $admin = Role::where('name', 'admin')->first();
+
+        $user->assignRole($admin);
 
         $permissions = [
             [
@@ -64,9 +68,6 @@ class DatabaseSeeder extends Seeder
             Permission::create($data);
         }
 
-        $admin = Role::where('name', 'admin')->first();
-
-        
         $permissions = Permission::whereIn('name', [
             'ver usuário',
             'ver usuários',
@@ -76,8 +77,6 @@ class DatabaseSeeder extends Seeder
         ])->get();
 
         $admin->givePermissionTo($permissions);
-
-        $user->assignRole($admin);
 
     }
 }

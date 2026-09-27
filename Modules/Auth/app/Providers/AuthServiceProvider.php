@@ -40,10 +40,14 @@ class AuthServiceProvider extends ModuleServiceProvider
 
     public function boot(): void
     {
-        Gate::define('view_user', function(User $user) {
+        Gate::define('create_user', function(User $user) {
             $admin = Role::where('name', 'admin')->first();
             
-            return $user->hasRole('admin') AND $admin->hasPermissionTo('ver usuários');
+            return $user->hasRole('admin') AND $admin->hasPermissionTo('ver usuário');
+        });
+        
+        Gate::define('admin', function(User $user) {
+            return $user->hasRole('admin');
         });
     }
 

@@ -1,9 +1,11 @@
 <?php
 
-namespace Modules\Auth\ap\Http\Controllers;
+namespace Modules\Auth\app\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -12,7 +14,10 @@ class UserController extends Controller
      */
     public function index()
     {
-        return 'ok';
+        return response()->json([
+            'data' => User::all(),
+            'status' => true,
+        ]);
     }
 
     /**
@@ -26,7 +31,37 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request) {}
+    public function store(Request $request) {
+        try {
+            
+            $validated = $request->validate([
+                'name' => 'required|string|max:100',
+                'email' => 'required|email|string|max:100|unique:' . User::class,
+                'password' => 'required|min:6',
+            ]);
+
+            $user = User::create($validated);
+
+            $user->assignRole('user');
+
+            return response()->json([
+                'status' => true,
+                'user' => $user,
+                'role' => $user->roles,
+            ], 201);
+
+        } catch (\Throwable $th) {
+            Log::info('Tentativa de criar usuário', [
+                'error' => $th->getMessage(),
+                'file' => $th->getFile(), 
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'error' => 'Erro ao registar o usuário, tente novamente.',
+            ], 500);
+        }
+    }
 
     /**
      * Show the specified resource.

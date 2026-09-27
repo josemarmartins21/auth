@@ -1,9 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Auth\ap\Http\Controllers\UserController;
+use Modules\Auth\app\Http\Controllers\UserController;
 use Modules\Auth\app\Http\Controllers\AuthController;
-use Modules\Auth\app\Models\Permission;
 use Modules\Auth\app\Models\Role;
 
 Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
@@ -31,6 +30,8 @@ Route::middleware('auth:sanctum')->group(function() {
         ]);
     });
 
-    Route::get('users', [UserController::class, 'index'])->middleware('can:view_user');
+    Route::get('users', [UserController::class, 'index']);
+
+    Route::post('users', [UserController::class, 'store'])->middleware('can:admin');
 
 });

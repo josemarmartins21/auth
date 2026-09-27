@@ -3,7 +3,6 @@
 namespace Modules\Auth\app\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -39,6 +38,8 @@ class AuthController extends Controller
         } catch (\Throwable $th) {
             Log::info("Erro ao realizar o login.", [
                 'error' => $th->getMessage(),
+                'error_code' => $th->getCode(),
+                'file_name' => $th->getFile(),
             ]);
 
             return response()->json([
