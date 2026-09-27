@@ -12,8 +12,6 @@ class Permission extends ModelsPermission
 {
     use HasFactory;
 
-    protected $guard_name = 'api';
-
     /**
      * The attributes that are mass assignable.
      */

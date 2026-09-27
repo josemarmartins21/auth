@@ -16,10 +16,10 @@ class RoleSeeder extends Seeder
         Role::factory()->createMany([
             [
                 'name' => 'admin',
-                'guard' => 'api',
+                'guard_name' => 'api',
             ], [
                 'name' => 'user',
-                'guard' => 'api'
+                'guard_name' => 'api'
             ]
         ]);
     }

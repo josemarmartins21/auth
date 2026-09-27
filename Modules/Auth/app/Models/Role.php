@@ -12,8 +12,6 @@ class Role extends ModelsRole
 {
     use HasFactory;
 
-    protected $guard_name = 'api';
-
     /**
      * The attributes that are mass assignable.
      */

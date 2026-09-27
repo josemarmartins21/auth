@@ -64,7 +64,7 @@ class DatabaseSeeder extends Seeder
             Permission::create($data);
         }
 
-        $admin = \Modules\Auth\app\Models\Role::where('name', 'admin')->first();
+        $admin = Role::where('name', 'admin')->first();
 
         
         $permissions = Permission::whereIn('name', [
