@@ -4,6 +4,7 @@ namespace Modules\Auth\app\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -20,13 +21,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('auth::create');
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -51,7 +45,7 @@ class UserController extends Controller
             ], 201);
 
         } catch (\Throwable $th) {
-            Log::info('Tentativa de criar usuário', [
+            Log::info('Tentativa falhada de registar usuário', [
                 'error' => $th->getMessage(),
                 'file' => $th->getFile(), 
             ]);
@@ -68,24 +62,97 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        return view('auth::show');
-    }
+        try {
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('auth::edit');
+            $user = User::findOrFail($id);
+
+            return response()->json([
+                'status' => true,
+                'user' => $user,
+                'role' => $user->roles,
+            ], 201);
+
+        } catch (ModelNotFoundException) {
+             return response()->json([
+                'status' => false,
+                'error' => 'Usuário não encontrado.',
+            ], 404);
+
+        } catch ( \Exception $th) {
+            Log::info('Tentativa falhada de buscar usuário', [
+                'error' => $th->getMessage(),
+                'file' => $th->getFile(), 
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'error' => 'Erro ao buscar o usuário, tente novamente.',
+            ], 500);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id) {}
+    public function update(Request $request, $id) {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:100',
+                'email' => 'required|email|string|max:100',
+                'password' => 'required|min:6',
+            ]);
+
+            $emaisExist = User::where('email'. $validated['email'])->exists();
+
+            if ($emaisExist) throw new \Exception("Este email já sendo utilizado!");
+
+            $user = User::findOrFail($id);
+            
+            $user->updateOrFail($validated);
+
+            return response()->json([
+                'status' => true,
+                'user' => $user,
+            ], 201);
+
+        } catch (\Throwable $th) {
+            Log::info('Tentativa falhada de actualizar usuário', [
+                'error' => $th->getMessage(),
+                'file' => $th->getFile(), 
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'error' => 'Erro ao actualizar o usuário, tente novamente.',
+            ], 500);
+        }
+    }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id) {}
+    public function destroy($id) {
+        try {
+            $user = User::findOrFail($id);
+            
+            $user->delete();
+
+            return response()->json([
+                'status' => true,
+                'user' => "Usuário excluido com successo!",
+            ]);
+
+
+        } catch (\Throwable $th) {
+            Log::info('Tentativa falhada de exluir usuário', [
+                'error' => $th->getMessage(),
+                'file' => $th->getFile(), 
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'error' => 'Erro ao exluir o usuário, tente novamente.',
+            ], 500);
+        }
+    }
 }
