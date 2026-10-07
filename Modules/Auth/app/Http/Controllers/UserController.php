@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
@@ -16,7 +17,7 @@ class UserController extends Controller
     public function index()
     {
         return response()->json([
-            'data' => User::all(),
+            'data' => User::withoutRole('admin')->get(),
             'status' => true,
         ]);
     }
@@ -69,8 +70,9 @@ class UserController extends Controller
             return response()->json([
                 'status' => true,
                 'user' => $user,
-                'role' => $user->roles,
-            ], 201);
+                'roles' => $user->getRoleNames(),
+                'permissions' => $user->getDirectPermissions(),
+            ]);
 
         } catch (ModelNotFoundException) {
              return response()->json([
@@ -96,15 +98,16 @@ class UserController extends Controller
      */
     public function update(Request $request, $id) {
         try {
+            
+            Gate::allowIf(
+                fn (User $user) => $user->hasRole('admin') || $user->hasPermissionTo('editar usuário')
+            );
+
             $validated = $request->validate([
                 'name' => 'required|string|max:100',
                 'email' => 'required|email|string|max:100',
                 'password' => 'required|min:6',
             ]);
-
-            $emaisExist = User::where('email'. $validated['email'])->exists();
-
-            if ($emaisExist) throw new \Exception("Este email já sendo utilizado!");
 
             $user = User::findOrFail($id);
             
@@ -113,7 +116,7 @@ class UserController extends Controller
             return response()->json([
                 'status' => true,
                 'user' => $user,
-            ], 201);
+            ]);
 
         } catch (\Throwable $th) {
             Log::info('Tentativa falhada de actualizar usuário', [

@@ -4,10 +4,8 @@ namespace Modules\Auth\app\Providers;
 
 
 use App\Models\User;
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
 use Nwidart\Modules\Support\ModuleServiceProvider;
-use Modules\Auth\app\Models\Role;
 
 class AuthServiceProvider extends ModuleServiceProvider
 {
@@ -40,15 +38,7 @@ class AuthServiceProvider extends ModuleServiceProvider
 
     public function boot(): void
     {
-        Gate::define('create_user', function(User $user) {
-            $admin = Role::where('name', 'admin')->first();
-            
-            return $user->hasRole('admin') AND $admin->hasPermissionTo('ver usuário');
-        });
         
-        Gate::define('admin', function(User $user) {
-            return $user->hasRole('admin');
-        });
     }
 
     /**
